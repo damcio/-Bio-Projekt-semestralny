@@ -6,8 +6,8 @@ def onlineInput(structureName, fileFormat=None):
     return pdbl.retrieve_pdb_file(pdb_code=structureName, file_format=fileFormat)
 
 def localInput(fileName, fileFormat=None):
-    if 'mmcif' in fileName:
-        parser = MMCIFParser()
+    if '.cif' in fileName:
+        pass
     elif 'pdb' in fileName:
         parser = PDBParser()
 

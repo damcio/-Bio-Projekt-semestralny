@@ -6,7 +6,7 @@ parser.add_argument('structure_name', metavar='N', type=str, help='structure nam
 
 
 def main(args):
-    filename = inputParser.onlineInput(args.structure_name)
+    filename = inputParser.onlineInput(args.structure_name, 'pdb')
     a = 1
     pass
 
