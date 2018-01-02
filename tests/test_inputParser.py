@@ -1,5 +1,8 @@
 #!/usr/bin/python3
+import os
+
 from app.helpers import inputParser
+from defs import ROOT_DIR
 
 
 def test_pdbListDownload():
@@ -18,10 +21,18 @@ def test_pdbListDownloadWithFormat():
     with open(file) as f:
         assert structureName in f.readline()
 
-def test_parseDownloadedfile():
+def test_annotateDownloadedfile():
     structureName = '2lbk'
     fileFormat = 'pdb'
     file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
 
-    inputParser.localInput(file)
+    models = inputParser.annotate(file)
 
+    assert len(models) == 8
+
+def test_annotate():
+    fileName = ROOT_DIR+'/tests/testFiles/pdb2lbk.ent'
+
+    models = inputParser.annotate(fileName)
+
+    assert len(models) == 8
