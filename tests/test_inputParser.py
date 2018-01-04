@@ -12,6 +12,7 @@ def test_pdbListDownload():
     with open(file) as f:
         assert structureName in f.readline()
 
+
 def test_pdbListDownloadWithFormat():
     structureName = '2LBK'
     fileFormat = 'pdb'
@@ -21,6 +22,7 @@ def test_pdbListDownloadWithFormat():
     with open(file) as f:
         assert structureName in f.readline()
 
+
 def test_annotateDownloadedfile():
     structureName = '2lbk'
     fileFormat = 'pdb'
@@ -29,6 +31,7 @@ def test_annotateDownloadedfile():
     models = inputParser.annotate(file)
 
     assert len(models) == 8
+
 
 def test_strandLensMultipleModels():
     structureName = '2lbk'
@@ -43,6 +46,7 @@ def test_strandLensMultipleModels():
     for strand in strands:
         assert len(strand) == 17
 
+
 def test_strandLensToughModel():
     structureName = '1ehz'
     fileFormat = 'pdb'
@@ -50,15 +54,37 @@ def test_strandLensToughModel():
 
     strands = inputParser.readStrand(file)
 
-    assert len(strands) == 1
-    assert strands[0][0] == 'G'
-    assert strands[0][9] == 'G'
+    assert 1 == len(strands)
+    assert 'G' == strands[0][0]
+    assert 'G' == strands[0][9]
     for strand in strands:
         assert len(strand) == 76
 
+
 def test_annotate():
-    fileName = ROOT_DIR+'/tests/testFiles/pdb2lbk.ent'
+    fileName = ROOT_DIR + '/downloadedStructures/pdb2lbk.ent'
 
     models = inputParser.annotate(fileName)
 
     assert len(models) == 8
+
+def test_annotateCanonicalOnly():
+    fileName = ROOT_DIR + '/downloadedStructures/pdb1ehz.ent'
+
+    models = inputParser.annotate(fileName)
+
+    assert 1 == len(models)
+    assert 18 == len(models[0])
+
+def test_buildDotNotation():
+    structureName = '1ehz'
+    fileFormat = 'pdb'
+    desiredOutput = "(((((((...(((.....[..)))..(((...........)))......((((..]....)))).)))))))...."
+
+    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+
+    strands = inputParser.readStrand(file)
+
+    models = inputParser.annotate(file)
+
+    dotNotation = inputParser.makeDotNotation(file)

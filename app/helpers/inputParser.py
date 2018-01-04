@@ -23,16 +23,21 @@ def readBasePairs(annotatedOutput):
     for line in out:
         tmpList = list()
         if 'Base-pairs' in line.strip():
-            tmpLine = next(out).strip()
-            while tmpLine and 'Residue conformations' not in tmpLine:
-                tmpList.append(tmpLine.split()[0])
-                tmpLine = next(out).strip()
+            tmpLine = next(out).strip().split()
+            while tmpLine and 'Residue' not in tmpLine[0]:
+                try:
+                    if 'Ww/' in tmpLine[3] and tmpLine[6] == 'cis':
+                        tmpPair = tmpLine[0].split('-')
+                        tmpList.append((tmpPair[0][1:], tmpPair[1][1:]))
+                except IndexError:
+                    pass
+                tmpLine = next(out).strip().split()
             pairs.append(tmpList)
     return pairs
 
-def readStrand(annotatedOutput):
+def readStrand(filePath):
    pdbp = PDBParser()
-   struct = pdbp.get_structure('file', annotatedOutput)
+   struct = pdbp.get_structure('file', filePath)
    strands = []
 
    for model in struct.get_models():
@@ -46,6 +51,9 @@ def readStrand(annotatedOutput):
        strands.append(strand)
 
    return strands
+
+def makeDotNotation(file):
+    pass
 
 
 def annotate(filename=None):
