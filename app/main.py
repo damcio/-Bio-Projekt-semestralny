@@ -7,8 +7,10 @@ parser.add_argument('structure_name', metavar='N', type=str, help='structure nam
 
 def main(args):
     filename = inputParser.onlineInput(args.structure_name, 'pdb')
-    a = 1
-    pass
+    annotated = inputParser.annotate(filename)
+    inputParser.readStrand(filename)
+    print(annotated)
+
 
 if __name__ == '__main__':
     args = parser.parse_args()

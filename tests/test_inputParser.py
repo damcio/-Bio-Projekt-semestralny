@@ -30,6 +30,32 @@ def test_annotateDownloadedfile():
 
     assert len(models) == 8
 
+def test_strandLensMultipleModels():
+    structureName = '2lbk'
+    fileFormat = 'pdb'
+    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+
+    strands = inputParser.readStrand(file)
+
+    assert len(strands) == 8
+    assert strands[0][0] == 'G'
+    assert strands[0][-1] == 'C'
+    for strand in strands:
+        assert len(strand) == 17
+
+def test_strandLensToughModel():
+    structureName = '1ehz'
+    fileFormat = 'pdb'
+    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+
+    strands = inputParser.readStrand(file)
+
+    assert len(strands) == 1
+    assert strands[0][0] == 'G'
+    assert strands[0][9] == 'G'
+    for strand in strands:
+        assert len(strand) == 76
+
 def test_annotate():
     fileName = ROOT_DIR+'/tests/testFiles/pdb2lbk.ent'
 
