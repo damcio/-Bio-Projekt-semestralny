@@ -11,9 +11,11 @@ class structureInfo():
         self.basePairs = list()
 
 def onlineInput(structureName, fileFormat=None):
+    if not fileFormat:
+        fileFormat = 'pdb'
     pdbl = PDBList()
 
-    return pdbl.retrieve_pdb_file(pdb_code=structureName, file_format=fileFormat)
+    return pdbl.retrieve_pdb_file(pdb_code=structureName, file_format=fileFormat, pdir=ROOT_DIR+'/downloadedStructures/')
 
 def readBasePairs(annotatedOutput):
     out = iter(str(annotatedOutput).split('\n'))
