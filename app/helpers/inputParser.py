@@ -61,8 +61,9 @@ def readStrand(filePath):
 def traceDepth(pair, stacks, depth):
     for stackPair in stacks[depth]:
         if pair[1] > stackPair[1]:
-            depth += 1
-            return depth
+            if pair[0] < stackPair[1]:
+                depth += 1
+                return depth
     return depth
 
 
@@ -83,9 +84,10 @@ def makeDotNotation(strand, basepairs):
 
     for i, stack in enumerate(stacks):
         for pair in stack:
-            output[pair[0]-1], output[pair[1]-1] = brackets[i][0], brackets[i][1]
+            output[pair[0] - 1], output[pair[1] - 1] = brackets[i][0], brackets[i][1]
 
     return "".join(output)
+
 
 def annotate(filename=None):
     stdout = subprocess.run([ROOT_DIR + '/ext/MC_Annotate/MC-Annotate', filename], stdout=subprocess.PIPE,

@@ -76,10 +76,25 @@ def test_annotateCanonicalOnly():
     assert 1 == len(models)
     assert 18 == len(models[0])
 
-def test_buildDotNotationCanonicalOnly():
+def test_buildDotNotationCanonicalOnlyTwoLayers():
     structureName = '1ehz'
     fileFormat = 'pdb'
     desiredOutput = "(((((((...(((.....[..)))..(((...........)))......((((..]....)))).)))))))...."
+
+    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+
+    strands = inputParser.readStrand(file)
+
+    models = inputParser.annotate(file)
+
+    dotNotation = inputParser.makeDotNotation(strands[0], models[0])
+
+    assert desiredOutput == dotNotation
+
+def test_buildDotNotationCanonicalOnlyOneLayer():
+    structureName = '2lbk'
+    fileFormat = 'pdb'
+    desiredOutput = ".(((((.....)))))."
 
     file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
 
