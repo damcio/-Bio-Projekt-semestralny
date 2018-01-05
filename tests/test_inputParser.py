@@ -76,7 +76,7 @@ def test_annotateCanonicalOnly():
     assert 1 == len(models)
     assert 18 == len(models[0])
 
-def test_buildDotNotation():
+def test_buildDotNotationCanonicalOnly():
     structureName = '1ehz'
     fileFormat = 'pdb'
     desiredOutput = "(((((((...(((.....[..)))..(((...........)))......((((..]....)))).)))))))...."
@@ -87,4 +87,7 @@ def test_buildDotNotation():
 
     models = inputParser.annotate(file)
 
-    dotNotation = inputParser.makeDotNotation(file)
+    dotNotation = inputParser.makeDotNotation(strands[0], models[0])
+
+    assert desiredOutput == dotNotation
+
