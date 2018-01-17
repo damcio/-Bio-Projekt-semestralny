@@ -73,8 +73,9 @@ def readModels(filePath):
 
                 for model in models:
                     for res in missing_residues:
-                        model[res.chain].insert(res.index - 1,
-                                                res.residue)
+                        if res.chain in model.keys():
+                            model[res.chain].insert(res.index - 1,
+                                                    res.residue)
                 break
 
     return models
