@@ -1,10 +1,12 @@
 import subprocess
+from collections import defaultdict, namedtuple
+
 from defs import ROOT_DIR
 
 import os
 from Bio.PDB import PDBList, PDBParser, MMCIFParser
 
-nonoWords = ['MG', 'MN', 'HOH']
+nonoWords = ['MG', 'MN', 'HOH', 'K']
 
 
 class structureInfo():
@@ -40,22 +42,42 @@ def readBasePairs(annotatedOutput):
     return pairs
 
 
-def readStrand(filePath):
+def readModels(filePath):
     pdbp = PDBParser()
     struct = pdbp.get_structure('file', filePath)
-    strands = []
+    models = list()
 
     for model in struct.get_models():
-        strand = []
-        for res in model.get_residues():
-            tempName = res.resname.lstrip()
-            if tempName not in nonoWords:
-                if len(tempName) > 1:
-                    tempName = tempName[-1]
-                strand.append(tempName)
-        strands.append(strand)
+        for chain in model.get_chains():
+            strand = defaultdict(list)
+            chainName = chain.id
+            for res in chain.get_residues():
+                tempName = res.resname.lstrip()
+                if tempName not in nonoWords:
+                    if len(tempName) > 1:
+                        tempName = tempName[-1]
+                    strand[chainName].append(tempName)
+            models.append(strand)
 
-    return strands
+    with open(filePath, 'r+') as file:
+        for line in file:
+            if 'MISSING RESIDUES' in line:
+                missing_residues = []
+                missing_res_tuple = namedtuple('missing_res_tuple', ['chain', 'residue', 'index'])
+                for _ in range(5):
+                    next(file)
+                temp_line = file.readline().rstrip().split()
+                while '470' not in temp_line[1]:
+                    missing_residues.append(missing_res_tuple(temp_line[3], temp_line[2], int(temp_line[4])))
+                    temp_line = file.readline().rstrip().split()
+
+                for model in models:
+                    for res in missing_residues:
+                        model[res.chain].insert(res.index - 1,
+                                                res.residue)
+                break
+
+    return models
 
 
 def traceDepth(pair, stacks, depth):
@@ -68,9 +90,9 @@ def traceDepth(pair, stacks, depth):
 
 
 def makeDotNotation(strand, basepairs):
-    brackets = [('(', ')'), ('[', ']')]
-    output = ['.' for _ in strand]
-    stacks = [[], []]
+    brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
+    output = ['.' if i != '-' else '-' for i in strand]
+    stacks = [[], [], [], [], []]
     depth = 0
     for pair in basepairs:
         tempDepth = depth
