@@ -50,6 +50,17 @@ def test_strandLensMultipleModels():
         assert len(model['A']) == 17
 
 
+def test_strandTwoChains():
+    structureName = '2z74'
+    fileFormat = 'pdb'
+    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+
+    models = inputParser.readModels(file)
+
+    assert len(models[0].keys()) == 2
+    assert models[0]['A'][0] == 'A'
+    assert models[0]['A'][-1] == 'U'
+
 def test_strandLensToughModel():
     structureName = '1ehz'
     fileFormat = 'pdb'
@@ -109,11 +120,12 @@ CGUAUACCGAACGGUACGUACGGUGGUGUGAGAGGAGUUCGCUCUACUCUAU".upper())
 
     file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
 
-    strand = inputParser.readModels(file)[0]
+    models = inputParser.readModels(file)
 
-    txt = ''.join(strand['A'])
+    txt = ''.join(models[0]['A'])
+    base_pairs = inputParser.annotate(file)
 
-    assert desiredOutput == strand['A']
+    assert desiredOutput == models[0]['A']
 
 
 @pytest.mark.skip("might get dropped")

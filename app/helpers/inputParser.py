@@ -6,7 +6,7 @@ from defs import ROOT_DIR
 import os
 from Bio.PDB import PDBList, PDBParser, MMCIFParser
 
-nonoWords = ['MG', 'MN', 'HOH', 'K']
+nonoWords = ['MG', 'MN', 'HOH', 'K', 'G6P']
 
 
 class structureInfo():
@@ -48,8 +48,8 @@ def readModels(filePath):
     models = list()
 
     for model in struct.get_models():
+        strand = defaultdict(list)
         for chain in model.get_chains():
-            strand = defaultdict(list)
             chainName = chain.id
             for res in chain.get_residues():
                 tempName = res.resname.lstrip()
@@ -57,7 +57,7 @@ def readModels(filePath):
                     if len(tempName) > 1:
                         tempName = tempName[-1]
                     strand[chainName].append(tempName)
-            models.append(strand)
+        models.append(strand)
 
     with open(filePath, 'r+') as file:
         for line in file:
