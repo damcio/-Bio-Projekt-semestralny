@@ -90,16 +90,16 @@ def traceDepth(pair, stacks, depth):
     return depth
 
 
-def makeDotNotation(strand, basepairs):
+def make_dot_notation(strand, base_pairs):
     brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
     output = ['.' if i != '-' else '-' for i in strand]
     stacks = [[], [], [], [], []]
     depth = 0
-    for pair in basepairs:
-        tempDepth = depth
+    for pair in base_pairs:
+        temp_depth = depth
         depth = traceDepth(pair, stacks, depth)
-        while tempDepth > depth:
-            tempDepth = depth
+        while temp_depth > depth:
+            temp_depth = depth
             depth = traceDepth(pair, stacks, depth)
 
         stacks[depth].append(pair)

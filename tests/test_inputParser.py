@@ -60,6 +60,8 @@ def test_strandTwoChains():
     assert len(models[0].keys()) == 2
     assert models[0]['A'][0] == 'A'
     assert models[0]['A'][-1] == 'U'
+    assert models[0]['B'][0] == 'C'
+    assert models[0]['B'][-1] == 'A'
 
 def test_strandLensToughModel():
     structureName = '1ehz'
@@ -136,11 +138,11 @@ def test_buildDotNotationCanonicalOnlyTwoLayers():
 
     file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
 
-    strands = inputParser.readModels(file)
+    models = inputParser.readModels(file)
 
-    models = inputParser.annotate(file)
+    base_pairs = inputParser.annotate(file)
 
-    dotNotation = inputParser.makeDotNotation(strands[0], models[0])
+    dotNotation = inputParser.make_dot_notation(models[0], base_pairs[0])
 
     assert desiredOutput == dotNotation
 
@@ -157,7 +159,7 @@ def test_buildDotNotationCanonicalOnlyOneLayer():
 
     models = inputParser.annotate(file)
 
-    dotNotation = inputParser.makeDotNotation(strands[0], models[0])
+    dotNotation = inputParser.make_dot_notation(strands[0], models[0])
 
     assert desiredOutput == dotNotation
 
@@ -183,6 +185,6 @@ def test_buildDotNotationCanonicalHugeStructure():
     strandmod = strands[0]
     strandmod.insert(0, '-')
     strandmod.extend(['-'] * 22)
-    dotNotation = inputParser.makeDotNotation(strandmod, models[0])
+    dotNotation = inputParser.make_dot_notation(strandmod, models[0])
 
     assert desiredCount == dotNotation.count('.')
