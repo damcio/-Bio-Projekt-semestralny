@@ -103,9 +103,6 @@ def test_properStrandRead():
     file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
 
     strand = inputParser.read_models_from_pdb_file(file)[0]
-    # txt = ''.join(strand['A'])
-    # with open('tmp.txt', 'w') as file:
-    #     file.write(txt)
 
     assert desired_output == strand['A']
 
