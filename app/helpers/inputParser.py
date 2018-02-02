@@ -6,7 +6,7 @@ from defs import ROOT_DIR
 import os
 from Bio.PDB import PDBList, PDBParser, MMCIFParser
 
-nono_words = ['MG', 'MN', 'HOH', 'K']
+nono_words = ['MG', 'MN', 'HOH', 'K', 'G6P']
 
 
 class structureInfo():
@@ -64,8 +64,8 @@ def read_models_from_pdb_file(file_path):
     models = list()
 
     for model in struct.get_models():
+        strand = defaultdict(list)
         for chain in model.get_chains():
-            strand = defaultdict(list)
             chain_name = chain.id
             for res in chain.get_residues():
                 temp_name = res.resname.lstrip()
@@ -73,7 +73,7 @@ def read_models_from_pdb_file(file_path):
                     if len(temp_name) > 1:
                         temp_name = temp_name[-1]
                     strand[chain_name].append(temp_name)
-            models.append(strand)
+        models.append(strand)
 
     return models
 
@@ -103,8 +103,6 @@ def trace_depth(pair, stacks, depth):
 # deprecated
 def make_dot_notation(strand, basepairs):
     return
-
-
 #     brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
 #     output = ['.' if i != '-' else '-' for i in strand]
 #     stacks = [[], [], [], [], []]
@@ -124,7 +122,6 @@ def make_dot_notation(strand, basepairs):
 #             output[pair[0] - 1], output[pair[1] - 1] = brackets[i][0], brackets[i][1]
 #
 #     return "".join(output)
-
 
 def annotate(filename=None):
     stdout = subprocess.run([ROOT_DIR + '/ext/MC_Annotate/MC-Annotate', filename], stdout=subprocess.PIPE,
