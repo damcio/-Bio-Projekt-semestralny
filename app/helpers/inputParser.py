@@ -6,7 +6,7 @@ from defs import ROOT_DIR
 import os
 from Bio.PDB import PDBList, PDBParser, MMCIFParser
 
-nonoWords = ['MG', 'MN', 'HOH', 'K']
+nono_words = ['MG', 'MN', 'HOH', 'K']
 
 
 class structureInfo():
@@ -14,52 +14,36 @@ class structureInfo():
         self.basePairs = list()
 
 
-def onlineInput(structureName, fileFormat=None):
-    if not fileFormat:
-        fileFormat = 'pdb'
+def online_input(structure_name, file_format=None):
+    if not file_format:
+        file_format = 'pdb'
     pdbl = PDBList()
 
-    return pdbl.retrieve_pdb_file(pdb_code=structureName, file_format=fileFormat,
+    return pdbl.retrieve_pdb_file(pdb_code=structure_name, file_format=file_format,
                                   pdir=ROOT_DIR + '/downloadedStructures/')
 
 
-def readBasePairs(annotatedOutput):
-    out = iter(str(annotatedOutput).split('\n'))
+def read_base_pairs(annotated_output):
+    out = iter(str(annotated_output).split('\n'))
     pairs = list(list())
     for line in out:
-        tmpList = list()
+        tmp_list = list()
         if 'Base-pairs' in line.strip():
-            tmpLine = next(out).strip().split()
-            while tmpLine and 'Residue' not in tmpLine[0]:
+            tmp_line = next(out).strip().split()
+            while tmp_line and 'Residue' not in tmp_line[0]:
                 try:
-                    if 'Ww/' in tmpLine[3] and tmpLine[6] == 'cis':
-                        tmpPair = tmpLine[0].split('-')
-                        tmpList.append((int(tmpPair[0][1:]), int(tmpPair[1][1:])))
+                    if 'Ww/' in tmp_line[3] and tmp_line[6] == 'cis':
+                        tmp_pair = tmp_line[0].split('-')
+                        tmp_list.append((int(tmp_pair[0][1:]), int(tmp_pair[1][1:])))
                 except IndexError:
                     pass
-                tmpLine = next(out).strip().split()
-            pairs.append(tmpList)
+                tmp_line = next(out).strip().split()
+            pairs.append(tmp_list)
     return pairs
 
 
-def readModels(filePath):
-    pdbp = PDBParser()
-    struct = pdbp.get_structure('file', filePath)
-    models = list()
-
-    for model in struct.get_models():
-        for chain in model.get_chains():
-            strand = defaultdict(list)
-            chainName = chain.id
-            for res in chain.get_residues():
-                tempName = res.resname.lstrip()
-                if tempName not in nonoWords:
-                    if len(tempName) > 1:
-                        tempName = tempName[-1]
-                    strand[chainName].append(tempName)
-            models.append(strand)
-
-    with open(filePath, 'r+') as file:
+def get_missing_residues_from_pdb(file_path):
+    with open(file_path, 'r+') as file:
         for line in file:
             if 'MISSING RESIDUES' in line:
                 missing_residues = []
@@ -71,17 +55,43 @@ def readModels(filePath):
                     missing_residues.append(missing_res_tuple(temp_line[3], temp_line[2], int(temp_line[4])))
                     temp_line = file.readline().rstrip().split()
 
-                for model in models:
-                    for res in missing_residues:
-                        if res.chain in model.keys():
-                            model[res.chain].insert(res.index - 1,
-                                                    res.residue)
-                break
+                return missing_residues
+
+
+def read_models_from_pdb_file(file_path):
+    pdbp = PDBParser()
+    struct = pdbp.get_structure('file', file_path)
+    models = list()
+
+    for model in struct.get_models():
+        for chain in model.get_chains():
+            strand = defaultdict(list)
+            chain_name = chain.id
+            for res in chain.get_residues():
+                temp_name = res.resname.lstrip()
+                if temp_name not in nono_words:
+                    if len(temp_name) > 1:
+                        temp_name = temp_name[-1]
+                    strand[chain_name].append(temp_name)
+            models.append(strand)
 
     return models
 
 
-def traceDepth(pair, stacks, depth):
+def read_complete_models(file_path):
+    models = read_models_from_pdb_file(file_path)
+    missing_residues = get_missing_residues_from_pdb(file_path, models)
+    for model in models:
+        for res in missing_residues:
+            if res.chain in model.keys():
+                model[res.chain].insert(res.index - 1,
+                                        res.residue)
+    return models
+
+    return models
+
+
+def trace_depth(pair, stacks, depth):
     for stackPair in stacks[depth]:
         if pair[1] > stackPair[1]:
             if pair[0] < stackPair[1]:
@@ -90,26 +100,30 @@ def traceDepth(pair, stacks, depth):
     return depth
 
 
-def makeDotNotation(strand, basepairs):
-    brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
-    output = ['.' if i != '-' else '-' for i in strand]
-    stacks = [[], [], [], [], []]
-    depth = 0
-    for pair in basepairs:
-        tempDepth = depth
-        depth = traceDepth(pair, stacks, depth)
-        while tempDepth > depth:
-            tempDepth = depth
-            depth = traceDepth(pair, stacks, depth)
+# deprecated
+def make_dot_notation(strand, basepairs):
+    return
 
-        stacks[depth].append(pair)
-        depth = 0
 
-    for i, stack in enumerate(stacks):
-        for pair in stack:
-            output[pair[0] - 1], output[pair[1] - 1] = brackets[i][0], brackets[i][1]
-
-    return "".join(output)
+#     brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
+#     output = ['.' if i != '-' else '-' for i in strand]
+#     stacks = [[], [], [], [], []]
+#     depth = 0
+#     for pair in basepairs:
+#         tempDepth = depth
+#         depth = traceDepth(pair, stacks, depth)
+#         while tempDepth > depth:
+#             tempDepth = depth
+#             depth = traceDepth(pair, stacks, depth)
+#
+#         stacks[depth].append(pair)
+#         depth = 0
+#
+#     for i, stack in enumerate(stacks):
+#         for pair in stack:
+#             output[pair[0] - 1], output[pair[1] - 1] = brackets[i][0], brackets[i][1]
+#
+#     return "".join(output)
 
 
 def annotate(filename=None):
@@ -117,4 +131,4 @@ def annotate(filename=None):
                             universal_newlines=True).stdout
     with open(ROOT_DIR + '/ext/MC_Annotate/output/' + filename.split('/')[-1] + '.out', 'w+') as f:
         f.write(stdout)
-    return readBasePairs(stdout)
+    return read_base_pairs(stdout)

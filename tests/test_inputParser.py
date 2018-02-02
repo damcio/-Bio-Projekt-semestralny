@@ -10,7 +10,7 @@ from defs import ROOT_DIR
 
 def test_pdbListDownload():
     structureName = '1FAT'
-    file = inputParser.onlineInput(structureName)
+    file = inputParser.online_input(structureName)
     assert structureName.lower() in file
     with open(file) as f:
         assert structureName in f.readline()
@@ -19,7 +19,7 @@ def test_pdbListDownload():
 def test_pdbListDownloadWithFormat():
     structureName = '2LBK'
     fileFormat = 'pdb'
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
     assert structureName.lower() in file
     assert fileFormat in file
     with open(file) as f:
@@ -29,7 +29,7 @@ def test_pdbListDownloadWithFormat():
 def test_annotateDownloadedfile():
     structureName = '2lbk'
     fileFormat = 'pdb'
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
     models = inputParser.annotate(file)
 
@@ -39,9 +39,9 @@ def test_annotateDownloadedfile():
 def test_strandLensMultipleModels():
     structureName = '2lbk'
     fileFormat = 'pdb'
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
-    models = inputParser.readModels(file)
+    models = inputParser.read_models_from_pdb_file(file)
 
     assert len(models) == 8
     assert models[0]['A'][0] == 'G'
@@ -53,9 +53,9 @@ def test_strandLensMultipleModels():
 def test_strandLensToughModel():
     structureName = '1ehz'
     fileFormat = 'pdb'
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
-    models = inputParser.readModels(file)
+    models = inputParser.read_models_from_pdb_file(file)
 
     assert 1 == len(models[0].keys())
     assert 'G' == models[0]['A'][0]
@@ -86,9 +86,9 @@ def test_properStrandRead():
     fileFormat = 'pdb'
     desiredOutput = list('gCGGAUUUAgCUCAGuuGGGAGAGCgCCAGAcUgAAgAucUGGAGgUCcUGUGuuCGaUCCACAGAAUUCGCACCA'.upper())
 
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
-    strand = inputParser.readModels(file)[0]
+    strand = inputParser.read_models_from_pdb_file(file)[0]
     # txt = ''.join(strand['A'])
     # with open('tmp.txt', 'w') as file:
     #     file.write(txt)
@@ -99,21 +99,36 @@ def test_properStrandRead():
 def test_properLongStrandRead():
     structureName = '3g78'
     fileFormat = 'pdb'
-    desiredOutput = list("GuGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUA\
+    desiredOutput = list("uGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUA\
 ACAGUUAGCCUAACGCAAGGGUGUCCGUGGCGACAUGGAAUCUGAAGGAAGCGGACGGCA\
 AACCUUCGGUCUGAGGAACACGAACUUCAUAUGAGGCUAGGUAUCAAUGGAUGAGUUUGC\
 AUAACAAAACAAAGUCCUUUCUGCCAAAGUUGGUACAGAGUAAAUGAAGCAGAUUGAUGA\
 AGGGAAAGACUGCAUUCUUACCCGGGGAGGUCUGGAAACAGAAGUCAGCAGAAGUCAUAG\
 UACCCUGUUCGCAGGGGAAGGACGGAACAAGUAUGGCGUUCGCGCCUAAGCUUGAACCGC\
-CGUAUACCGAACGGUACGUACGGUGGUGUGAGAGGAGUUCGCUCUACUCUAU".upper())
+CGUAUACCGAACGGUACGUACGGUGGUGUG".upper())
 
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
-    strand = inputParser.readModels(file)[0]
+    models = inputParser.read_models_from_pdb_file(file)
 
-    txt = ''.join(strand['A'])
+    assert desiredOutput == models[0]['A']
 
-    assert desiredOutput == strand['A']
+def test_get_missing_residues_from_strandA_3G78():
+    structure_name = '3g78'
+    file_format = 'pdb'
+    desiredCount = '-.{[.(.(((<..(((((((((((...(((.......)))..(((((...{{{.{{{...\
+)))))..(((...(((..((((.((((((....))))))))))...]>..)))...))).\
+..(((((((((((.(.....)...((((.......(......(...((((((..((((..\
+[[[[[.))))...)))).}}}.}}}...))...)......)....)))))))))...)))\
+)))...)))))))))))...}))).)(...((((....))))...).......(((.(..\
+..((..........))...))))....(.(((..(((......)))...))).).(((.(\
+((((((((....)))..)))))).)))...----------------------'.count('-')
+
+    file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
+
+    missing_residues = inputParser.get_missing_residues_from_pdb(file)
+
+    assert desiredCount == len(missing_residues)
 
 
 @pytest.mark.skip("might get dropped")
@@ -122,13 +137,13 @@ def test_buildDotNotationCanonicalOnlyTwoLayers():
     fileFormat = 'pdb'
     desiredOutput = "(((((((...(((.....[..)))..(((...........)))......((((..]....)))).)))))))...."
 
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
-    strands = inputParser.readModels(file)
+    strands = inputParser.read_models_from_pdb_file(file)
 
     models = inputParser.annotate(file)
 
-    dotNotation = inputParser.makeDotNotation(strands[0], models[0])
+    dotNotation = inputParser.make_dot_notation(strands[0], models[0])
 
     assert desiredOutput == dotNotation
 
@@ -139,13 +154,13 @@ def test_buildDotNotationCanonicalOnlyOneLayer():
     fileFormat = 'pdb'
     desiredOutput = ".(((((.....)))))."
 
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
-    strands = inputParser.readModels(file)
+    strands = inputParser.read_models_from_pdb_file(file)
 
     models = inputParser.annotate(file)
 
-    dotNotation = inputParser.makeDotNotation(strands[0], models[0])
+    dotNotation = inputParser.make_dot_notation(strands[0], models[0])
 
     assert desiredOutput == dotNotation
 
@@ -156,21 +171,18 @@ def test_buildDotNotationCanonicalHugeStructure():
     fileFormat = 'pdb'
     desiredOutput = ".(((((.....)))))."
     desiredCount = '-.{[.(.(((<..(((((((((((...(((.......)))..(((((...{{{.{{{...\
-                    )))))..(((...(((..((((.((((((....))))))))))...]>..)))...))).\
-                    ..(((((((((((.(.....)...((((.......(......(...((((((..((((..\
-                    [[[[[.))))...)))).}}}.}}}...))...)......)....)))))))))...)))\
-                    )))...)))))))))))...}))).)(...((((....))))...).......(((.(..\
-                    ..((..........))...))))....(.(((..(((......)))...))).).(((.(\
-                    ((((((((....)))..)))))).)))...----------------------'.count('.')
+)))))..(((...(((..((((.((((((....))))))))))...]>..)))...))).\
+..(((((((((((.(.....)...((((.......(......(...((((((..((((..\
+[[[[[.))))...)))).}}}.}}}...))...)......)....)))))))))...)))\
+)))...)))))))))))...}))).)(...((((....))))...).......(((.(..\
+..((..........))...))))....(.(((..(((......)))...))).).(((.(\
+((((((((....)))..)))))).)))...----------------------'.count('.')
 
-    file = inputParser.onlineInput(structureName=structureName, fileFormat=fileFormat)
+    file = inputParser.online_input(structure_name=structureName, file_format=fileFormat)
 
-    strands = inputParser.readModels(file)
+    strands = inputParser.read_models_from_pdb_file(file)
 
     models = inputParser.annotate(file)
-    strandmod = strands[0]
-    strandmod.insert(0, '-')
-    strandmod.extend(['-'] * 22)
-    dotNotation = inputParser.makeDotNotation(strandmod, models[0])
+    dotNotation = inputParser.make_dot_notation(strands[0]['A'], models[0])
 
     assert desiredCount == dotNotation.count('.')

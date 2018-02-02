@@ -6,9 +6,9 @@ parser.add_argument('structure_name', metavar='N', type=str, help='structure nam
 
 
 def main(args):
-    filename = inputParser.onlineInput(args.structure_name, 'pdb')
+    filename = inputParser.online_input(args.structure_name, 'pdb')
     annotated = inputParser.annotate(filename)
-    inputParser.readModels(filename)
+    inputParser.read_models_from_pdb_file(filename)
     print(annotated)
 
 
