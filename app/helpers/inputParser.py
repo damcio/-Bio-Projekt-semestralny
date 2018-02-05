@@ -4,7 +4,7 @@ from collections import defaultdict, namedtuple
 from defs import ROOT_DIR
 
 import os
-from Bio.PDB import PDBList, PDBParser, MMCIFParser
+from Bio.PDB import PDBList, PDBParser
 
 nono_words = ['MG', 'MN', 'HOH', 'K', 'G6P']
 
@@ -80,7 +80,7 @@ def read_models_from_pdb_file(file_path):
 
 def read_complete_models(file_path):
     models = read_models_from_pdb_file(file_path)
-    missing_residues = get_missing_residues_from_pdb(file_path, models)
+    missing_residues = get_missing_residues_from_pdb(file_path)
     for model in models:
         for res in missing_residues:
             if res.chain in model.keys():
@@ -102,26 +102,27 @@ def trace_depth(pair, stacks, depth):
 
 # deprecated
 def make_dot_notation(strand, basepairs):
-    return
-#     brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
-#     output = ['.' if i != '-' else '-' for i in strand]
-#     stacks = [[], [], [], [], []]
-#     depth = 0
-#     for pair in basepairs:
-#         tempDepth = depth
-#         depth = traceDepth(pair, stacks, depth)
-#         while tempDepth > depth:
-#             tempDepth = depth
-#             depth = traceDepth(pair, stacks, depth)
-#
-#         stacks[depth].append(pair)
-#         depth = 0
-#
-#     for i, stack in enumerate(stacks):
-#         for pair in stack:
-#             output[pair[0] - 1], output[pair[1] - 1] = brackets[i][0], brackets[i][1]
-#
-#     return "".join(output)
+    pass
+    # brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
+    # output = ['.' if i != '-' else '-' for i in strand]
+    # stacks = [[], [], [], [], []]
+    # depth = 0
+    # for pair in basepairs:
+    #     tempDepth = depth
+    #     depth = trace_depth(pair, stacks, depth)
+    #     while tempDepth > depth:
+    #         tempDepth = depth
+    #         depth = trace_depth(pair, stacks, depth)
+    #
+    #     stacks[depth].append(pair)
+    #     depth = 0
+    #
+    # for i, stack in enumerate(stacks):
+    #     for pair in stack:
+    #         output[pair[0] - 1], output[pair[1] - 1] = brackets[i][0], brackets[i][1]
+    #
+    # return "".join(output)
+
 
 def annotate(filename=None):
     stdout = subprocess.run([ROOT_DIR + '/ext/MC_Annotate/MC-Annotate', filename], stdout=subprocess.PIPE,
