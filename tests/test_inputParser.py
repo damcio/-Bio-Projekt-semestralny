@@ -142,6 +142,7 @@ def test_get_missing_residues_from_strandA_3G78():
 
     assert desired_count == len(missing_residues)
 
+
 @pytest.mark.skip("might get dropped")
 def test_buildDotNotationCanonicalOnlyTwoLayers():
     structure_name = '1ehz'
@@ -153,7 +154,7 @@ def test_buildDotNotationCanonicalOnlyTwoLayers():
     strands = inputParser.read_models_from_pdb_file(file)
 
     models = inputParser.annotate(file)
-    models1 = [(0, 74), (1, 2), (3, 73), (5, 72), (6, 63), (7, 8), (10, 14), (11, 13), (18, 62), (19, 60), (21, 59), (22, 58), (23, 24), (26, 52), (27, 29), (30, 32), (34, 51), (35, 49), (37, 40), (42, 47), (43, 46), (55, 56), (64, 69), (65, 68), (66, 67), (70, 71)]
+
     dot_notation = inputParser.make_dot_notation(strands[0], models[0])
 
     assert desired_output == dot_notation

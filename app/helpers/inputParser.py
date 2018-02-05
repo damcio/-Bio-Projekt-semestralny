@@ -1,17 +1,14 @@
 import subprocess
-from collections import defaultdict, namedtuple
+from collections import OrderedDict, namedtuple
 
 from defs import ROOT_DIR
 
 import os
 from Bio.PDB import PDBList, PDBParser
 
+
+
 nono_words = ['MG', 'MN', 'HOH', 'K', 'G6P']
-
-
-class structureInfo():
-    def __init__(self):
-        self.basePairs = list()
 
 
 def online_input(structure_name, file_format=None):
@@ -26,6 +23,7 @@ def online_input(structure_name, file_format=None):
 def read_base_pairs(annotated_output):
     out = iter(str(annotated_output).split('\n'))
     pairs = list(list())
+    base_pair = namedtuple('base_pair', ['strand', 'position'])
     for line in out:
         tmp_list = list()
         if 'Base-pairs' in line.strip():
@@ -34,7 +32,8 @@ def read_base_pairs(annotated_output):
                 try:
                     if 'Ww/' in tmp_line[3] and tmp_line[6] == 'cis':
                         tmp_pair = tmp_line[0].split('-')
-                        tmp_list.append((int(tmp_pair[0][1:]), int(tmp_pair[1][1:])))
+                        tmp_list.append((base_pair(tmp_pair[0][0], int(tmp_pair[0][1:])),
+                                         base_pair(tmp_pair[1][0], int(tmp_pair[1][1:]))))
                 except IndexError:
                     pass
                 tmp_line = next(out).strip().split()
@@ -64,9 +63,10 @@ def read_models_from_pdb_file(file_path):
     models = list()
 
     for model in struct.get_models():
-        strand = defaultdict(list)
+        strand = OrderedDict()
         for chain in model.get_chains():
             chain_name = chain.id
+            strand.setdefault(chain_name, [])
             for res in chain.get_residues():
                 temp_name = res.resname.lstrip()
                 if temp_name not in nono_words:
