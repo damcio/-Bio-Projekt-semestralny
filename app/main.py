@@ -3,6 +3,7 @@ import app.helpers.inputParser as inputParser
 
 parser = argparse.ArgumentParser(description='Provide secondary-structure name')
 parser.add_argument('structure_name', metavar='N', type=str, help='structure name from PDB')
+parser.add_argument('prediction-mode', metavar='M', type=str, help='mode for prediction: nuss - nussinov algorithm, mcan - mcannotate prediction')
 
 
 def main(args):
