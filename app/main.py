@@ -7,7 +7,7 @@ parser.add_argument('structure_name', metavar='N', type=str, help='structure nam
 
 def main(args):
     filename = inputParser.online_input(args.structure_name, 'pdb')
-    annotated = inputParser.annotate(filename)
+    annotated = inputParser.annotate_basepairs(filename)
     inputParser.read_models_from_pdb_file(filename)
     print(annotated)
 

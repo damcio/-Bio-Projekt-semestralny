@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+from collections import OrderedDict
 
 import pytest
 from Bio.PDB.PDBParser import PDBParser
@@ -31,7 +32,7 @@ def test_annotateDownloadedfile():
     file_format = 'pdb'
     file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
 
-    models = inputParser.annotate(file)
+    models = inputParser.annotate_basepairs(file)
 
     assert len(models) == 8
 
@@ -81,7 +82,7 @@ def test_strandLensToughModel():
 def test_annotate():
     fileName = ROOT_DIR + '/downloadedStructures/pdb2lbk.ent'
 
-    models = inputParser.annotate(fileName)
+    models = inputParser.annotate_basepairs(fileName)
 
     assert len(models) == 8
 
@@ -89,7 +90,7 @@ def test_annotate():
 def test_annotateCanonicalOnly():
     fileName = ROOT_DIR + '/downloadedStructures/pdb1ehz.ent'
 
-    models = inputParser.annotate(fileName)
+    models = inputParser.annotate_basepairs(fileName)
 
     assert 1 == len(models)
     assert 18 == len(models[0])
@@ -143,8 +144,37 @@ def test_get_missing_residues_from_strandA_3G78():
     assert desired_count == len(missing_residues)
 
 
+def test_make_offset_dict_three_chains():
+    strand = OrderedDict.fromkeys('AZB')
+    strand['A'] = ['C', 'G', 'A', 'G']
+    strand['Z'] = ['U', 'A']
+    strand['B'] = ['C', 'A', 'C']
+
+    offset_dict = inputParser.make_offset_dict(strand)
+
+    assert offset_dict['A'] == 0
+    assert offset_dict['Z'] == 4
+    assert offset_dict['B'] == 6
+
+
+def test_fix_base_pairs_two_strand_model():
+    structure_name = '3g78'
+    file_format = 'pdb'
+
+    file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
+    models = inputParser.read_complete_models(file)
+
+    base_pairs = inputParser.annotate_basepairs(file)[0]
+
+    fixed_base_pairs = inputParser.fix_base_pairs(models[0], base_pairs)
+
+    pair_with_z_strand = [pair for pair in fixed_base_pairs if pair[1].strand == 'Z']
+
+    assert pair_with_z_strand[0][1].position == 418
+
+
 @pytest.mark.skip("might get dropped")
-def test_buildDotNotationCanonicalOnlyTwoLayers():
+def test_build_dot_notation_canonical_only_two_layers():
     structure_name = '1ehz'
     file_format = 'pdb'
     desired_output = "(((((((...(((.....[..)))..(((...........)))......((((..]....)))).)))))))...."
@@ -153,7 +183,7 @@ def test_buildDotNotationCanonicalOnlyTwoLayers():
 
     strands = inputParser.read_models_from_pdb_file(file)
 
-    models = inputParser.annotate(file)
+    models = inputParser.annotate_basepairs(file)
 
     dot_notation = inputParser.make_dot_notation(strands[0], models[0])
 
@@ -161,7 +191,7 @@ def test_buildDotNotationCanonicalOnlyTwoLayers():
 
 
 @pytest.mark.skip("might get dropped")
-def test_buildDotNotationCanonicalOnlyOneLayer():
+def test_build_dot_notation_canonical_only_one_layer():
     structure_name = '2lbk'
     file_format = 'pdb'
     desired_output = ".(((((.....)))))."
@@ -170,15 +200,15 @@ def test_buildDotNotationCanonicalOnlyOneLayer():
 
     strands = inputParser.read_models_from_pdb_file(file)
 
-    models = inputParser.annotate(file)
+    models = inputParser.annotate_basepairs(file)
 
     dot_notation = inputParser.make_dot_notation(strands[0], models[0])
 
     assert desired_output == dot_notation
 
 
-@pytest.mark.skip("might get dropped")
-def test_buildDotNotationCanonicalHugeStructure():
+# @pytest.mark.skip("might get dropped")
+def test_build_dot_notation_canonical_huge_structure():
     structure_name = '3g78'
     file_format = 'pdb'
     desired_count = '-.{[.(.(((<..(((((((((((...(((.......)))..(((((...{{{.{{{...\
@@ -193,8 +223,10 @@ def test_buildDotNotationCanonicalHugeStructure():
 
     strands = inputParser.read_complete_models(file)
 
-    models = inputParser.annotate(file)
-    strand_to_test = ''.join(strands[0]['A']).join(strands[0]['Z'])
-    dot_notation = inputParser.make_dot_notation(strand_to_test, models[0])
+    base_pairs = inputParser.annotate_basepairs(file)
+    strand_to_test = ''.join(strands[0]['A']) + ''.join(strands[0]['Z'])
+    fixed_base_pairs = inputParser.fix_base_pairs(strands[0], base_pairs[0])
+
+    dot_notation = inputParser.make_dot_notation(strand_to_test, fixed_base_pairs)
 
     assert desired_count == dot_notation.count('.')
