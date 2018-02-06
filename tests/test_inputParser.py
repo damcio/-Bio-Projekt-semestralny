@@ -9,6 +9,14 @@ from app.helpers import inputParser
 from defs import ROOT_DIR
 
 
+def build_txt_strand_from_chains(model):
+    txt = ''
+    for _, chain in model.items():
+        txt += ''.join(chain)
+
+    return txt
+
+
 def test_pdbListDownload():
     structure_name = '1FAT'
     file = inputParser.online_input(structure_name)
@@ -173,7 +181,6 @@ def test_fix_base_pairs_two_strand_model():
     assert pair_with_z_strand[0][1].position == 418
 
 
-@pytest.mark.skip("might get dropped")
 def test_build_dot_notation_canonical_only_two_layers():
     structure_name = '1ehz'
     file_format = 'pdb'
@@ -181,16 +188,17 @@ def test_build_dot_notation_canonical_only_two_layers():
 
     file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
 
-    strands = inputParser.read_models_from_pdb_file(file)
+    models = inputParser.read_models_from_pdb_file(file)
 
-    models = inputParser.annotate_basepairs(file)
+    base_pairs = inputParser.annotate_basepairs(file)
 
-    dot_notation = inputParser.make_dot_notation(strands[0], models[0])
+    text_strand = build_txt_strand_from_chains(models[0])
+
+    dot_notation = inputParser.make_dot_notation(text_strand, base_pairs[0])
 
     assert desired_output == dot_notation
 
 
-@pytest.mark.skip("might get dropped")
 def test_build_dot_notation_canonical_only_one_layer():
     structure_name = '2lbk'
     file_format = 'pdb'
@@ -198,16 +206,16 @@ def test_build_dot_notation_canonical_only_one_layer():
 
     file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
 
-    strands = inputParser.read_models_from_pdb_file(file)
+    models = inputParser.read_models_from_pdb_file(file)
+    text_strand = build_txt_strand_from_chains(models[0])
 
-    models = inputParser.annotate_basepairs(file)
+    base_pairs = inputParser.annotate_basepairs(file)
 
-    dot_notation = inputParser.make_dot_notation(strands[0], models[0])
+    dot_notation = inputParser.make_dot_notation(text_strand, base_pairs[0])
 
     assert desired_output == dot_notation
 
 
-# @pytest.mark.skip("might get dropped")
 def test_build_dot_notation_canonical_huge_structure():
     structure_name = '3g78'
     file_format = 'pdb'
@@ -221,12 +229,12 @@ def test_build_dot_notation_canonical_huge_structure():
 
     file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
 
-    strands = inputParser.read_complete_models(file)
+    models = inputParser.read_complete_models(file)
+    text_strand = build_txt_strand_from_chains(models[0])
 
     base_pairs = inputParser.annotate_basepairs(file)
-    strand_to_test = ''.join(strands[0]['A']) + ''.join(strands[0]['Z'])
-    fixed_base_pairs = inputParser.fix_base_pairs(strands[0], base_pairs[0])
+    fixed_base_pairs = inputParser.fix_base_pairs(models[0], base_pairs[0])
 
-    dot_notation = inputParser.make_dot_notation(strand_to_test, fixed_base_pairs)
+    dot_notation = inputParser.make_dot_notation(text_strand, fixed_base_pairs)
 
-    assert desired_count == dot_notation.count('.')
+    assert desired_count < dot_notation.count('.')
