@@ -9,13 +9,6 @@ from app.helpers import inputParser
 from defs import ROOT_DIR
 
 
-def build_txt_strand_from_chains(model):
-    txt = ''
-    for _, chain in model.items():
-        txt += ''.join(chain)
-
-    return txt
-
 
 def test_pdbListDownload():
     structure_name = '1FAT'
@@ -230,7 +223,7 @@ def test_build_dot_notation_canonical_huge_structure():
     file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
 
     models = inputParser.read_complete_models(file)
-    text_strand = build_txt_strand_from_chains(models[0])
+    text_strand = inputParser.build_txt_strand_from_chains(models[0])
 
     base_pairs = inputParser.annotate_basepairs(file)
     fixed_base_pairs = inputParser.fix_base_pairs(models[0], base_pairs[0])

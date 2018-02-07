@@ -10,6 +10,14 @@ nono_words = ['MG', 'MN', 'HOH', 'K', 'G6P']
 base_pair_tuple = namedtuple('base_pair', ['strand', 'position'])
 
 
+def build_txt_strand_from_chains(model):
+    txt = ''
+    for _, chain in model.items():
+        txt += ''.join(chain)
+
+    return txt
+
+
 def online_input(structure_name, file_format=None):
     if not file_format:
         file_format = 'pdb'
@@ -79,6 +87,7 @@ def get_missing_residues_from_pdb(file_path):
                     temp_line = file.readline().rstrip().split()
 
                 return missing_residues
+    return []
 
 
 def read_models_from_pdb_file(file_path):
