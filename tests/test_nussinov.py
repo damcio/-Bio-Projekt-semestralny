@@ -1,18 +1,13 @@
 #!/usr/bin/python3
-import os
-
-import pytest
-
 from app import nussinov
-from defs import ROOT_DIR
 
 
 def test_simple_strand():
     test_strand = 'gGGACCUUCCCGGUCUC'.upper()
 
-    base_pairs = nussinov.nussinov_algorithm(test_strand)
+    base_pair = nussinov.nussinov_algorithm(test_strand)[0]
 
-    assert (0, 16) == base_pairs[0]
+    assert (1, 17) == (base_pair[0].position, base_pair[1].position)
 
 def test_long_strand():
     test_strand = 'GuGUGCCCGGCAUGGGUGCAGUCUAUAGGGUGAGAGUCCCGAACUGUGAAGGCAGAAGUA\

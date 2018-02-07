@@ -1,9 +1,5 @@
 #!/usr/bin/python3
-import os
 from collections import OrderedDict
-
-import pytest
-from Bio.PDB.PDBParser import PDBParser
 
 from app.helpers import inputParser
 from defs import ROOT_DIR
@@ -185,7 +181,7 @@ def test_build_dot_notation_canonical_only_two_layers():
 
     base_pairs = inputParser.annotate_basepairs(file)
 
-    text_strand = build_txt_strand_from_chains(models[0])
+    text_strand = inputParser.build_txt_strand_from_chains(models[0])
 
     dot_notation = inputParser.make_dot_notation(text_strand, base_pairs[0])
 
@@ -200,7 +196,7 @@ def test_build_dot_notation_canonical_only_one_layer():
     file = inputParser.online_input(structure_name=structure_name, file_format=file_format)
 
     models = inputParser.read_models_from_pdb_file(file)
-    text_strand = build_txt_strand_from_chains(models[0])
+    text_strand = inputParser.build_txt_strand_from_chains(models[0])
 
     base_pairs = inputParser.annotate_basepairs(file)
 

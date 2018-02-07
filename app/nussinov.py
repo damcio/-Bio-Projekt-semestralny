@@ -1,7 +1,11 @@
 import numpy as np
+from app.helpers.inputParser import base_pair_tuple
 
 
 def w(el1, el2):
+    """
+    Returns weight based on residue pair
+    """
     pair = el1 + el2
     return int(pair == 'AU' or
                pair == 'UA' or
@@ -10,6 +14,11 @@ def w(el1, el2):
 
 
 def nussinov_algorithm(rna_strand):
+    """
+    Finds strands secondary structure using Nussinov's dynamic programming algorithm
+    :param rna_strand: Text representation of RNA strand
+    :return: List of found base pairs
+    """
     matrix = np.zeros(shape=(len(rna_strand), len(rna_strand)), dtype=int)
     for i in range(len(rna_strand)):
         for j in range(len(rna_strand)):
@@ -43,4 +52,4 @@ def nussinov_algorithm(rna_strand):
 
     traceback(0, len(rna_strand) - 1)
 
-    return solution
+    return [(base_pair_tuple('A', pair[0]+1), base_pair_tuple('A', pair[1]+1)) for pair in solution]

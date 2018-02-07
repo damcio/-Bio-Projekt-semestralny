@@ -11,6 +11,12 @@ base_pair_tuple = namedtuple('base_pair', ['strand', 'position'])
 
 
 def build_txt_strand_from_chains(model):
+    """
+    Concatenates chains in given model and builds a single strand from them
+
+    :param model: Model aggregate of chains
+    :return: RNA strand text string
+    """
     txt = ''
     for _, chain in model.items():
         txt += ''.join(chain)
@@ -19,6 +25,13 @@ def build_txt_strand_from_chains(model):
 
 
 def online_input(structure_name, file_format=None):
+    """
+    Uses BioPython's PDBList to download tertiary structure from PDB
+
+    :param structure_name: PDB correct name of RNA structure
+    :param file_format: File format to pull from database, currently only 'pdb' is supported
+    :return:
+    """
     if not file_format:
         file_format = 'pdb'
     pdbl = PDBList()
@@ -28,6 +41,12 @@ def online_input(structure_name, file_format=None):
 
 
 def read_base_pairs_from_mcannotate(annotated_output):
+    """
+    Parses MC-Annotate output for listed base pairs
+
+    :param annotated_output: Output from MC-Annotate's analysis of tertiary structure
+    :return: List of secondary structure's base pairs
+    """
     out = iter(str(annotated_output).split('\n'))
     pairs = list(list())
     for line in out:
@@ -48,6 +67,12 @@ def read_base_pairs_from_mcannotate(annotated_output):
 
 
 def make_offset_dict(strand):
+    """
+    Helper function for calculating offsets at which chains fall into in a model
+
+    :param strand: Model to calculate offsets from, OrderedDict with chain names as keys
+    :return: Dictionary of offsets
+    """
     offset_dict = OrderedDict.fromkeys(strand.keys())
     temp_length = 0
     for chain, items in strand.items():
@@ -58,6 +83,14 @@ def make_offset_dict(strand):
 
 
 def fix_base_pairs(strand, basepairs):
+    """
+    MC-Annotate provides base pairs between chains, with residue positions relative to chain,
+    this function offsets positions so that pair positions are aligned to one concatenated chain
+
+    :param strand: Model with chains to align
+    :param basepairs: MC-Annotate's base pairs list
+    :return: Offset base pairs list
+    """
     offset_dict = make_offset_dict(strand)
 
     fixed_basepairs = []
@@ -74,6 +107,13 @@ def fix_base_pairs(strand, basepairs):
 
 
 def get_missing_residues_from_pdb(file_path):
+    """
+    PDBParser does not include "missing" residues that are mentioned in PDB file,
+    this function parses PDB file and returns mentioned missing residues
+
+    :param file_path: Path to PDB file
+    :return: List of missing residues, with information about which chain they come from
+    """
     with open(file_path, 'r+') as file:
         for line in file:
             if 'MISSING RESIDUES' in line:
@@ -91,6 +131,12 @@ def get_missing_residues_from_pdb(file_path):
 
 
 def read_models_from_pdb_file(file_path):
+    """
+    Parses PDB file for strands
+
+    :param file_path: Path to PDB file
+    :return: Returns list of models and chains they contain
+    """
     pdbp = PDBParser()
     struct = pdbp.get_structure('file', file_path)
     models = list()
@@ -112,6 +158,12 @@ def read_models_from_pdb_file(file_path):
 
 
 def read_complete_models(file_path):
+    """
+    Appends residues missing from PDBParser to its output
+
+    :param file_path: Path to PDB file
+    :return: List of complete models
+    """
     models = read_models_from_pdb_file(file_path)
     missing_residues = get_missing_residues_from_pdb(file_path)
     for model in models:
@@ -125,6 +177,14 @@ def read_complete_models(file_path):
 
 
 def trace_depth(pair, stacks, depth):
+    """
+    Helper function for tracing base pairs "depth" while building dot bracket notation string
+
+    :param pair: Pair to analyze
+    :param stacks: Current pair "stacks"
+    :param depth: Current depth of main function
+    :return: Depth at which make_dot_notation function should now operate
+    """
     for stackPair in stacks[depth]:
         if pair[1].position > stackPair[1].position:
             if pair[0].position < stackPair[1].position:
@@ -133,8 +193,15 @@ def trace_depth(pair, stacks, depth):
     return depth
 
 
-# deprecated
 def make_dot_notation(strand, basepairs):
+    """
+    Makes Vienna-format text string secondary structure representation from
+    MC-Annotate and PDBParser parsed input
+
+    :param strand: Strand to build secondary structure of
+    :param basepairs: List of base pairs found in the strand
+    :return: Dot bracket notation text string
+    """
     brackets = [('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]
     output = ['.' if i != '-' else '-' for i in strand]
     stacks = [[], [], [], [], []]
@@ -156,9 +223,19 @@ def make_dot_notation(strand, basepairs):
     return "".join(output)
 
 
-def annotate_basepairs(filename=None):
-    stdout = subprocess.run([ROOT_DIR + '/ext/MC_Annotate/MC-Annotate', filename], stdout=subprocess.PIPE,
-                            universal_newlines=True).stdout
-    with open(ROOT_DIR + '/ext/MC_Annotate/output/' + filename.split('/')[-1] + '.out', 'w+') as f:
+def annotate_basepairs(file_path):
+    """
+    Runs external MC-Annotate program and returns base pairs found by it
+
+    :param file_path: Path to PDB file
+    :return: List of base pairs found by MC-Annotate
+    """
+    try:
+        stdout = subprocess.run([ROOT_DIR + '/ext/MC_Annotate/MC-Annotate', file_path], stdout=subprocess.PIPE,
+                                universal_newlines=True).stdout
+    except FileNotFoundError:
+        print("MC_Annotate not found! Please put the binary file in ./ext/MC_Annotate/")
+
+    with open(ROOT_DIR + '/ext/MC_Annotate/output/' + file_path.split('/')[-1] + '.out', 'w+') as f:
         f.write(stdout)
     return read_base_pairs_from_mcannotate(stdout)
